@@ -1,0 +1,197 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Inicio</p>
+    <h2 class="mt-2 font-display text-3xl font-semibold text-slate-900">Registrador de Movimientos</h2>
+    <p class="mt-3 max-w-2xl text-sm text-slate-600">Tu centro diario para registrar y revisar por donde se mueve el dinero.</p>
+</section>
+
+<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <a href="{% url 'cuentas:lista' %}" class="rounded-2xl border border-cyan-100 bg-white/85 p-5 shadow-sm shadow-cyan-100/60 transition hover:-translate-y-0.5">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Cuentas</p>
+        <p class="mt-3 text-sm text-slate-600">Saldos resumidos y detalle por cuenta.</p>
+    </a>
+    <a href="{% url 'movimientos:lista' %}" class="rounded-2xl border border-teal-100 bg-white/85 p-5 shadow-sm shadow-teal-100/60 transition hover:-translate-y-0.5">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Movimientos</p>
+        <p class="mt-3 text-sm text-slate-600">Registra ingresos, gastos y traspasos guiados.</p>
+    </a>
+    <a href="{% url 'creditos:lista' %}" class="rounded-2xl border border-amber-100 bg-white/85 p-5 shadow-sm shadow-amber-100/60 transition hover:-translate-y-0.5">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">Creditos</p>
+        <p class="mt-3 text-sm text-slate-600">Control de cuotas, pagos y reversiones.</p>
+    </a>
+    <a href="{% url 'reportes:indicadores' %}" class="rounded-2xl border border-sky-100 bg-white/85 p-5 shadow-sm shadow-sky-100/60 transition hover:-translate-y-0.5">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Indicadores</p>
+        <p class="mt-3 text-sm text-slate-600">Pantalla en espera para evolucion futura.</p>
+    </a>
+</section>
+
+<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+    <article class="rounded-2xl border border-emerald-100 bg-white/90 p-5 shadow-lg shadow-emerald-100/40">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-emerald-700">Saldo total</p>
+        <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ saldo_total|miles }}</p>
+        <p class="mt-1 text-xs text-slate-500">Suma de saldos actuales de tus cuentas.</p>
+    </article>
+    <article class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Total movimientos</p>
+        <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ total_movimientos }}</p>
+    </article>
+    <article class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Gastos</p>
+        <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ gastos_registrados }}</p>
+    </article>
+    <article class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Ingresos</p>
+        <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ ingresos_registrados }}</p>
+    </article>
+    <article class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Creditos activos</p>
+        <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ creditos_activos }}</p>
+    </article>
+</section>
+
+<section class="grid gap-4 xl:grid-cols-3">
+    <article class="rounded-2xl border border-cyan-100 bg-white/90 p-5 shadow-sm shadow-cyan-100/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-cyan-700">Fecha proximo corte</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">
+            {% if fecha_corte %}{{ fecha_corte|date:"d/m/Y" }}{% else %}No definida{% endif %}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">Dias restantes: {{ dias_restantes }}</p>
+    </article>
+    <article class="rounded-2xl border border-sky-100 bg-white/90 p-5 shadow-sm shadow-sky-100/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-sky-700">Gasto diario base</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">{{ gasto_diario_base|miles }}</p>
+    </article>
+    <article class="rounded-2xl border border-amber-100 bg-white/90 p-5 shadow-sm shadow-amber-100/50">
+        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">Gasto diario permitido</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">{{ gasto_diario_permitido|miles }}</p>
+        <p class="mt-1 text-xs text-slate-500">Ahorro aplicado: {{ porcentaje_ahorro }}%</p>
+    </article>
+</section>
+
+<section class="grid gap-4 xl:grid-cols-2">
+    <article class="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60">
+        <h3 class="font-display text-lg font-semibold text-slate-900">Gastos por dia (30 dias)</h3>
+        <canvas id="chart-dia" class="mt-3"></canvas>
+    </article>
+    <article class="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60">
+        <h3 class="font-display text-lg font-semibold text-slate-900">Gastos por semana (12 semanas)</h3>
+        <canvas id="chart-semana" class="mt-3"></canvas>
+    </article>
+</section>
+
+<section class="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60">
+    <h3 class="font-display text-lg font-semibold text-slate-900">Gastos por categoria (Top 10)</h3>
+    <canvas id="chart-categoria" class="mt-3"></canvas>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const gastosDia = {{ gastos_dia_json|safe }};
+    const gastosSemana = {{ gastos_semana_json|safe }};
+    const gastosCategoria = {{ gastos_categoria_json|safe }};
+
+    function formatMonto(value) {
+        return new Intl.NumberFormat('es-CL', { maximumFractionDigits: 2 }).format(value ?? 0);
+    }
+
+    function toLatamDate(value) {
+        if (typeof value !== 'string') return value;
+        const parts = value.split('-');
+        if (parts.length !== 3) return value;
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    }
+
+    const valueLabelPlugin = {
+        id: 'valueLabelPlugin',
+        afterDatasetsDraw(chart) {
+            if (chart.config.type !== 'line') return;
+            const { ctx } = chart;
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) return;
+                meta.data.forEach((point, index) => {
+                    const value = dataset.data[index];
+                    if (value === null || value === undefined) return;
+                    ctx.save();
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = '600 11px Manrope, Segoe UI, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(formatMonto(value), point.x, point.y - 8);
+                    ctx.restore();
+                });
+            });
+        }
+    };
+
+    Chart.register(valueLabelPlugin);
+
+    function createLineChart(canvasId, data, color) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => toLatamDate(item.label)),
+                datasets: [{
+                    label: 'Monto',
+                    data: data.map(item => item.total),
+                    borderColor: color,
+                    backgroundColor: color,
+                    pointRadius: 4,
+                    pointHoverRadius: 5,
+                    tension: 0.25,
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => formatMonto(value)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function createBarChart(canvasId, data, color) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(item => item.label),
+                datasets: [{
+                    label: 'Monto',
+                    data: data.map(item => item.total),
+                    backgroundColor: color,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => formatMonto(value)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createLineChart('chart-dia', gastosDia, 'rgba(13, 148, 136, 0.95)');
+    createLineChart('chart-semana', gastosSemana, 'rgba(14, 165, 233, 0.95)');
+    createBarChart('chart-categoria', gastosCategoria, 'rgba(245, 158, 11, 0.65)');
+</script>
+{% endblock %}
