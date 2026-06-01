@@ -121,5 +121,43 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+    <script>
+        (function () {
+            function toLatam(isoValue) {
+                if (!isoValue || typeof isoValue !== "string" || !isoValue.includes("-")) return "";
+                const [y, m, d] = isoValue.split("-");
+                if (!y || !m || !d) return "";
+                return `${d}/${m}/${y}`;
+            }
+
+            function ensureDateHint(input) {
+                input.setAttribute("lang", "es-CL");
+                const hintId = `${input.id || input.name || "fecha"}-latam-hint`;
+                let hint = document.getElementById(hintId);
+                if (!hint) {
+                    hint = document.createElement("p");
+                    hint.id = hintId;
+                    hint.className = "mt-1 text-xs text-slate-500";
+                    input.insertAdjacentElement("afterend", hint);
+                }
+                const formatted = toLatam(input.value);
+                hint.textContent = formatted ? `Fecha seleccionada: ${formatted}` : "Formato esperado: dd/mm/aaaa";
+            }
+
+            function init() {
+                document.querySelectorAll("input[type='date']").forEach((input) => {
+                    ensureDateHint(input);
+                    input.addEventListener("change", () => ensureDateHint(input));
+                    input.addEventListener("input", () => ensureDateHint(input));
+                });
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", init);
+            } else {
+                init();
+            }
+        })();
+    </script>
 </body>
 </html>

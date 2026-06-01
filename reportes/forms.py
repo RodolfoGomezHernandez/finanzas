@@ -2,14 +2,28 @@ from django import forms
 
 from .models import ConfiguracionKPI, FechaPagoProgramada, GastoFijoProgramado
 
+LATAM_DATE_INPUT_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"]
+
+
+def _latam_date_widget(css_class=None):
+    attrs = {
+        "type": "date",
+        "placeholder": "dd/mm/aaaa",
+        "autocomplete": "off",
+    }
+    if css_class:
+        attrs["class"] = css_class
+    return forms.DateInput(format="%Y-%m-%d", attrs=attrs)
+
 
 class InicioFiltroFechasForm(forms.Form):
     desde = forms.DateField(
         required=False,
-        input_formats=["%d/%m/%Y", "%Y-%m-%d"],
+        input_formats=LATAM_DATE_INPUT_FORMATS,
         widget=forms.DateInput(
-            format="%d/%m/%Y",
+            format="%Y-%m-%d",
             attrs={
+                "type": "date",
                 "placeholder": "dd/mm/aaaa",
                 "autocomplete": "off",
                 "class": "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700",
@@ -18,10 +32,11 @@ class InicioFiltroFechasForm(forms.Form):
     )
     hasta = forms.DateField(
         required=False,
-        input_formats=["%d/%m/%Y", "%Y-%m-%d"],
+        input_formats=LATAM_DATE_INPUT_FORMATS,
         widget=forms.DateInput(
-            format="%d/%m/%Y",
+            format="%Y-%m-%d",
             attrs={
+                "type": "date",
                 "placeholder": "dd/mm/aaaa",
                 "autocomplete": "off",
                 "class": "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700",
@@ -39,11 +54,16 @@ class InicioFiltroFechasForm(forms.Form):
 
 
 class ConfiguracionKPIForm(forms.ModelForm):
+    fecha_proximo_corte = forms.DateField(
+        required=False,
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=_latam_date_widget(),
+    )
+
     class Meta:
         model = ConfiguracionKPI
         fields = ["fecha_proximo_corte", "severidad_descuento", "categorias_excluidas"]
         widgets = {
-            "fecha_proximo_corte": forms.DateInput(attrs={"type": "date"}),
             "categorias_excluidas": forms.SelectMultiple(attrs={"size": 8}),
         }
         labels = {
@@ -52,18 +72,22 @@ class ConfiguracionKPIForm(forms.ModelForm):
 
 
 class FechaPagoProgramadaForm(forms.ModelForm):
+    fecha = forms.DateField(
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=_latam_date_widget(),
+    )
+
     class Meta:
         model = FechaPagoProgramada
         fields = ["nombre", "fecha", "monto_esperado", "frecuencia", "es_pago_principal", "activa"]
-        widgets = {
-            "fecha": forms.DateInput(attrs={"type": "date"}),
-        }
 
 
 class GastoFijoProgramadoForm(forms.ModelForm):
+    fecha = forms.DateField(
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=_latam_date_widget(),
+    )
+
     class Meta:
         model = GastoFijoProgramado
         fields = ["nombre", "monto", "fecha", "frecuencia", "activa"]
-        widgets = {
-            "fecha": forms.DateInput(attrs={"type": "date"}),
-        }

@@ -44,7 +44,7 @@
                 {% for cuota in cuotas %}
                 <tr class="transition hover:bg-teal-50/50">
                     <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ cuota.numero }}/{{ credito.cuotas_totales }}</td>
-                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.fecha_vencimiento }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.fecha_vencimiento|date:"d/m/Y" }}</td>
                     <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">{{ cuota.monto|miles }}</td>
                     <td class="whitespace-nowrap px-4 py-3">
                         {% if cuota.pagada %}
@@ -53,7 +53,7 @@
                             <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Pendiente</span>
                         {% endif %}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.fecha_pago|default:"-" }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{% if cuota.fecha_pago %}{{ cuota.fecha_pago|date:"d/m/Y" }}{% else %}-{% endif %}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ cuota.cuenta_pago|default:"-" }}</td>
                     <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
@@ -70,7 +70,7 @@
                     <td colspan="7" class="bg-slate-50 px-4 py-2 text-xs text-slate-600">
                         <span class="font-semibold text-slate-700">Eventos:</span>
                         {% for evento in cuota.eventos.all %}
-                            {{ evento.fecha_evento }} - {{ evento.get_tipo_display }}{% if evento.cuenta %} ({{ evento.cuenta }}){% endif %}{% if evento.detalle %}: {{ evento.detalle }}{% endif %}{% if not forloop.last %} | {% endif %}
+                            {{ evento.fecha_evento|date:"d/m/Y" }} - {{ evento.get_tipo_display }}{% if evento.cuenta %} ({{ evento.cuenta }}){% endif %}{% if evento.detalle %}: {{ evento.detalle }}{% endif %}{% if not forloop.last %} | {% endif %}
                         {% endfor %}
                     </td>
                 </tr>

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase
@@ -99,7 +99,7 @@ class ReportesKPIConfigTest(TestCase):
         respuesta = self.client.post(
             reverse("reportes:indicadores"),
             {
-                "fecha_proximo_corte": "2026-12-31",
+                "fecha_proximo_corte": "31/12/2026",
                 "severidad_descuento": "15",
                 "categorias_excluidas": [],
             },
@@ -162,3 +162,44 @@ class ReportesInicioFiltroFechasTest(TestCase):
         self.assertEqual(respuesta_limpia.status_code, 200)
         self.assertEqual(respuesta_limpia.context["total_movimientos"], 2)
         self.assertFalse(respuesta_limpia.context["filtro_fecha_activo"])
+
+
+class ReportesInicioPaginacionMovimientosTest(TestCase):
+    def setUp(self):
+        self.cuenta = Cuenta.objects.create(nombre="Cuenta Paginacion Inicio", saldo_inicial=Decimal("1500.00"))
+        self.cat_gasto = Categoria.objects.create(
+            nombre="Gasto Paginacion Inicio",
+            tipo=Categoria.TipoCategoria.GASTO,
+        )
+        self.url_inicio = reverse("reportes:inicio")
+
+        fecha_base = date(2026, 2, 1)
+        for indice in range(25):
+            Movimiento.objects.create(
+                tipo=Movimiento.TipoMovimiento.GASTO,
+                cuenta_origen=self.cuenta,
+                categoria=self.cat_gasto,
+                monto=Decimal("10.00"),
+                fecha=fecha_base + timedelta(days=indice),
+                descripcion=f"Movimiento {indice + 1}",
+            )
+
+    def test_inicio_paginar_movimientos_20_por_pagina(self):
+        respuesta = self.client.get(self.url_inicio)
+        self.assertEqual(respuesta.status_code, 200)
+
+        pagina = respuesta.context["movimientos_pagina"]
+        self.assertEqual(pagina.paginator.count, 25)
+        self.assertEqual(pagina.paginator.per_page, 20)
+        self.assertEqual(len(pagina.object_list), 20)
+        self.assertEqual(pagina.number, 1)
+        self.assertTrue(pagina.has_next())
+
+    def test_inicio_pagina_dos_muestra_restante(self):
+        respuesta = self.client.get(self.url_inicio, {"page": "2"})
+        self.assertEqual(respuesta.status_code, 200)
+
+        pagina = respuesta.context["movimientos_pagina"]
+        self.assertEqual(pagina.number, 2)
+        self.assertEqual(len(pagina.object_list), 5)
+        self.assertTrue(pagina.has_previous())

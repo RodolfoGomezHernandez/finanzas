@@ -32,7 +32,7 @@
                 {% for item in gastos_fijos %}
                 <tr class="transition hover:bg-teal-50/50">
                     <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ item.nombre }}</td>
-                    <td class="whitespace-nowrap px-4 py-3">{{ item.fecha }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.fecha|date:"d/m/Y" }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.monto|miles }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.get_frecuencia_display }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.activa|yesno:"Si,No" }}</td>

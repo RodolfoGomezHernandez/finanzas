@@ -5,14 +5,29 @@ from categorias.models import Categoria
 
 from .models import Movimiento
 
+LATAM_DATE_INPUT_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"]
+
+
+def _latam_date_widget():
+    return forms.DateInput(
+        format="%Y-%m-%d",
+        attrs={
+            "type": "date",
+            "placeholder": "dd/mm/aaaa",
+            "autocomplete": "off",
+        },
+    )
+
 
 class MovimientoForm(forms.ModelForm):
+    fecha = forms.DateField(
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=_latam_date_widget(),
+    )
+
     class Meta:
         model = Movimiento
         fields = ["tipo", "cuenta_origen", "cuenta_destino", "categoria", "monto", "fecha", "descripcion"]
-        widgets = {
-            "fecha": forms.DateInput(attrs={"type": "date"}),
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -97,4 +112,54 @@ class MovimientoForm(forms.ModelForm):
         elif cuenta_destino:
             self.add_error("cuenta_destino", "Solo los traspasos usan cuenta destino.")
 
+        return cleaned_data
+
+
+class MovimientoFiltroForm(forms.Form):
+    desde = forms.DateField(
+        required=False,
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=forms.DateInput(
+            format="%Y-%m-%d",
+            attrs={
+                "type": "date",
+                "placeholder": "dd/mm/aaaa",
+                "autocomplete": "off",
+                "class": "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700",
+            },
+        ),
+    )
+    hasta = forms.DateField(
+        required=False,
+        input_formats=LATAM_DATE_INPUT_FORMATS,
+        widget=forms.DateInput(
+            format="%Y-%m-%d",
+            attrs={
+                "type": "date",
+                "placeholder": "dd/mm/aaaa",
+                "autocomplete": "off",
+                "class": "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700",
+            },
+        ),
+    )
+    tipo = forms.ChoiceField(
+        required=False,
+        choices=[("", "Todos los tipos")],
+        widget=forms.Select(
+            attrs={
+                "class": "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tipo"].choices = [("", "Todos los tipos"), *Movimiento.TipoMovimiento.choices]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        desde = cleaned_data.get("desde")
+        hasta = cleaned_data.get("hasta")
+        if desde and hasta and desde > hasta:
+            raise ValidationError("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.")
         return cleaned_data

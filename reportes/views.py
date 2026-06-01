@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -122,8 +123,8 @@ class InicioView(TemplateView):
                 fecha_desde = filtro_form.cleaned_data["desde"]
                 fecha_hasta = filtro_form.cleaned_data["hasta"]
                 self.request.session[self.filtro_sesion_key] = {
-                    "desde": fecha_desde.strftime("%d/%m/%Y") if fecha_desde else "",
-                    "hasta": fecha_hasta.strftime("%d/%m/%Y") if fecha_hasta else "",
+                    "desde": fecha_desde.isoformat() if fecha_desde else "",
+                    "hasta": fecha_hasta.isoformat() if fecha_hasta else "",
                 }
                 return filtro_form, fecha_desde, fecha_hasta
             return filtro_form, None, None
@@ -154,12 +155,27 @@ class InicioView(TemplateView):
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
         )
+        movimientos_listado = movimientos_filtrados.select_related(
+            "cuenta_origen",
+            "cuenta_destino",
+            "categoria",
+        ).order_by("-fecha", "-id")
+
+        paginator = Paginator(movimientos_listado, 20)
+        movimientos_pagina = paginator.get_page(self.request.GET.get("page"))
+
+        paginacion_query = self.request.GET.copy()
+        paginacion_query.pop("page", None)
+        paginacion_query.pop("limpiar_fechas", None)
 
         context.update(_kpi_context(fecha_desde=fecha_desde, fecha_hasta=fecha_hasta))
         context["total_movimientos"] = movimientos_filtrados.count()
         context["gastos_registrados"] = movimientos_filtrados.filter(tipo=Movimiento.TipoMovimiento.GASTO).count()
         context["ingresos_registrados"] = movimientos_filtrados.filter(tipo=Movimiento.TipoMovimiento.INGRESO).count()
         context["creditos_activos"] = Credito.objects.filter(activa=True).count()
+        context["movimientos_pagina"] = movimientos_pagina
+        context["movimientos_per_page"] = 20
+        context["paginacion_query"] = paginacion_query.urlencode()
         context["filtro_fechas_form"] = filtro_form
         context["filtro_fecha_activo"] = bool(fecha_desde or fecha_hasta)
         context["filtro_fecha_desde"] = fecha_desde

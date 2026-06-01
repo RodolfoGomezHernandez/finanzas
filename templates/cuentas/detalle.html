@@ -58,7 +58,7 @@
             <tbody class="divide-y divide-slate-100">
                 {% for item in movimientos %}
                 <tr class="transition hover:bg-teal-50/50">
-                    <td class="whitespace-nowrap px-4 py-3">{{ item.fecha }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.fecha|date:"d/m/Y" }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.get_tipo_display }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.cuenta_origen }}</td>
                     <td class="whitespace-nowrap px-4 py-3">{{ item.cuenta_destino|default:"-" }}</td>
