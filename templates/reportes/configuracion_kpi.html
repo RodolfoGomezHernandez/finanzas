@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Indicadores</p>
+            <h2 class="font-display text-2xl font-semibold text-slate-900">Configuracion KPI</h2>
+            <p class="mt-2 text-sm text-slate-600">Ajusta el porcentaje de severidad y define categorias excluidas del control diario.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a class="inline-flex items-center rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100" href="{% url 'reportes:fechas_pago' %}">
+                Gestionar ingresos
+            </a>
+            <a class="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100" href="{% url 'reportes:gastos_fijos' %}">
+                Gestionar gastos fijos
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="mx-auto w-full max-w-4xl rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <form method="post" class="form-shell">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="mt-4 inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" type="submit">
+            Guardar configuracion
+        </button>
+    </form>
+</section>
+{% endblock %}

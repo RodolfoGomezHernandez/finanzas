@@ -1,0 +1,82 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto w-full max-w-3xl rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="mb-6 flex items-end justify-between gap-3">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">{{ page_subtitle|default:"Movimientos" }}</p>
+            <h2 class="font-display text-2xl font-semibold text-slate-900">{{ page_title|default:"Movimiento" }}</h2>
+        </div>
+    </div>
+
+    <form method="post" class="form-shell" id="movimiento-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <p>
+            {{ form.tipo.label_tag }}
+            {{ form.tipo }}
+            {{ form.tipo.errors }}
+        </p>
+        <p>
+            {{ form.fecha.label_tag }}
+            {{ form.fecha }}
+            {{ form.fecha.errors }}
+        </p>
+        <p>
+            {{ form.cuenta_origen.label_tag }}
+            {{ form.cuenta_origen }}
+            {{ form.cuenta_origen.errors }}
+        </p>
+        <p id="cuenta-destino-wrapper">
+            {{ form.cuenta_destino.label_tag }}
+            {{ form.cuenta_destino }}
+            {{ form.cuenta_destino.errors }}
+            <span class="helptext">Solo obligatorio para traspasos.</span>
+        </p>
+        <p>
+            {{ form.categoria.label_tag }}
+            {{ form.categoria }}
+            {{ form.categoria.errors }}
+        </p>
+        <p>
+            {{ form.monto.label_tag }}
+            {{ form.monto }}
+            {{ form.monto.errors }}
+        </p>
+        <p>
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+            {{ form.descripcion.errors }}
+        </p>
+
+        <button class="mt-4 inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" type="submit">
+            Guardar movimiento
+        </button>
+    </form>
+</section>
+
+<script>
+    (function () {
+        const tipo = document.getElementById("id_tipo");
+        const destinoWrapper = document.getElementById("cuenta-destino-wrapper");
+        const destinoSelect = document.getElementById("id_cuenta_destino");
+
+        function refreshDestino() {
+            const isTraspaso = tipo && tipo.value === "traspaso";
+            if (!destinoWrapper || !destinoSelect) {
+                return;
+            }
+            destinoWrapper.style.display = isTraspaso ? "block" : "none";
+            if (!isTraspaso) {
+                destinoSelect.value = "";
+            }
+        }
+
+        if (tipo) {
+            tipo.addEventListener("change", refreshDestino);
+            refreshDestino();
+        }
+    })();
+</script>
+{% endblock %}

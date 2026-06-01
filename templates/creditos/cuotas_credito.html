@@ -1,0 +1,87 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Credito</p>
+            <h2 class="font-display text-2xl font-semibold text-slate-900">{{ credito.nombre }}</h2>
+            <p class="mt-2 text-sm text-slate-600">Categoria de pago: {{ credito.categoria_pago }} | Estado: {{ credito.activa|yesno:"Activo,Cerrado" }}</p>
+        </div>
+        <a class="inline-flex items-center rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100" href="{% url 'creditos:lista' %}">Volver a creditos</a>
+    </div>
+</section>
+
+<section class="grid gap-4 md:grid-cols-3">
+    <article class="rounded-2xl border border-cyan-100 bg-white/85 p-5 shadow-sm shadow-cyan-100/60">
+        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-cyan-700">Monto total</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">{{ credito.monto_original|miles }}</p>
+    </article>
+    <article class="rounded-2xl border border-emerald-100 bg-white/85 p-5 shadow-sm shadow-emerald-100/60">
+        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">Total pagado</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">{{ total_pagado|miles }}</p>
+    </article>
+    <article class="rounded-2xl border border-amber-100 bg-white/85 p-5 shadow-sm shadow-amber-100/60">
+        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-amber-700">Saldo pendiente</p>
+        <p class="mt-2 font-display text-2xl font-semibold text-slate-900">{{ saldo_pendiente|miles }}</p>
+    </article>
+</section>
+
+<section class="overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-lg shadow-slate-200/60">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-slate-700">
+            <thead class="bg-slate-100/90 text-xs uppercase tracking-[0.08em] text-slate-600">
+                <tr>
+                    <th class="px-4 py-3 text-left">Cuota</th>
+                    <th class="px-4 py-3 text-left">Vencimiento</th>
+                    <th class="px-4 py-3 text-left">Monto</th>
+                    <th class="px-4 py-3 text-left">Estado</th>
+                    <th class="px-4 py-3 text-left">Fecha pago</th>
+                    <th class="px-4 py-3 text-left">Cuenta</th>
+                    <th class="px-4 py-3 text-left">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for cuota in cuotas %}
+                <tr class="transition hover:bg-teal-50/50">
+                    <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ cuota.numero }}/{{ credito.cuotas_totales }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.fecha_vencimiento }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">{{ cuota.monto|miles }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">
+                        {% if cuota.pagada %}
+                            <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Pagada</span>
+                        {% else %}
+                            <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.fecha_pago|default:"-" }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ cuota.cuenta_pago|default:"-" }}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-2">
+                            {% if cuota.pagada %}
+                                <a class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100" href="{% url 'creditos:cuota_revertir' cuota.pk %}">Revertir</a>
+                            {% else %}
+                                <a class="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700 transition hover:border-teal-300 hover:bg-teal-100" href="{% url 'creditos:cuota_pagar' cuota.pk %}">Pagar</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% if cuota.eventos.count %}
+                <tr>
+                    <td colspan="7" class="bg-slate-50 px-4 py-2 text-xs text-slate-600">
+                        <span class="font-semibold text-slate-700">Eventos:</span>
+                        {% for evento in cuota.eventos.all %}
+                            {{ evento.fecha_evento }} - {{ evento.get_tipo_display }}{% if evento.cuenta %} ({{ evento.cuenta }}){% endif %}{% if evento.detalle %}: {{ evento.detalle }}{% endif %}{% if not forloop.last %} | {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr>
+                    <td class="px-4 py-8 text-center text-slate-500" colspan="7">No hay cuotas generadas para este credito.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

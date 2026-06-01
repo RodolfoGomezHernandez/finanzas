@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Indicadores</p>
+            <h2 class="font-display text-2xl font-semibold text-slate-900">Ingresos programados</h2>
+            <p class="mt-2 text-sm text-slate-600">El proximo pago principal define los dias del tramo corto del gasto diario.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a class="inline-flex items-center rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100" href="{% url 'reportes:configuracion_kpi' %}">Volver a configuracion</a>
+            <a class="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100" href="{% url 'reportes:gastos_fijos' %}">Ver gastos fijos</a>
+            <a class="inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" href="{% url 'reportes:fecha_pago_crear' %}">Nuevo ingreso</a>
+        </div>
+    </div>
+</section>
+
+<section class="overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-lg shadow-slate-200/60">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-slate-700">
+            <thead class="bg-slate-100/90 text-xs uppercase tracking-[0.08em] text-slate-600">
+                <tr>
+                    <th class="px-4 py-3 text-left">Nombre</th>
+                    <th class="px-4 py-3 text-left">Fecha</th>
+                    <th class="px-4 py-3 text-left">Monto esperado</th>
+                    <th class="px-4 py-3 text-left">Frecuencia</th>
+                    <th class="px-4 py-3 text-left">Principal</th>
+                    <th class="px-4 py-3 text-left">Activa</th>
+                    <th class="px-4 py-3 text-left">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for item in fechas_pago %}
+                <tr class="transition hover:bg-teal-50/50">
+                    <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ item.nombre }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.fecha }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.monto_esperado|miles }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.get_frecuencia_display }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.es_pago_principal|yesno:"Si,No" }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.activa|yesno:"Si,No" }}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-2">
+                            <a class="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100" href="{% url 'reportes:fecha_pago_editar' item.pk %}">Editar</a>
+                            <a class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100" href="{% url 'reportes:fecha_pago_eliminar' item.pk %}">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td class="px-4 py-8 text-center text-slate-500" colspan="7">No hay ingresos programados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

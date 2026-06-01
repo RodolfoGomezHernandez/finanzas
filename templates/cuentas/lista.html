@@ -1,0 +1,93 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Gestion</p>
+            <h2 class="font-display text-2xl font-semibold text-slate-900">Cuentas</h2>
+            <p class="mt-2 text-sm text-slate-600">El saldo actual se calcula automaticamente usando saldo inicial + historial de movimientos.</p>
+        </div>
+        <a class="inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" href="{% url 'cuentas:crear' %}">
+            Nueva cuenta
+        </a>
+    </div>
+</section>
+
+<section class="overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-lg shadow-slate-200/60">
+    <header class="border-b border-slate-100 px-4 py-3">
+        <h3 class="font-display text-lg font-semibold text-slate-900">Cuentas activas</h3>
+    </header>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-slate-700">
+            <thead class="bg-slate-100/90 text-xs uppercase tracking-[0.08em] text-slate-600">
+                <tr>
+                    <th class="px-4 py-3 text-left">Nombre</th>
+                    <th class="px-4 py-3 text-left">Tipo</th>
+                    <th class="px-4 py-3 text-left">Solo traspasos</th>
+                    <th class="px-4 py-3 text-left">Saldo inicial</th>
+                    <th class="px-4 py-3 text-left">Saldo actual</th>
+                    <th class="px-4 py-3 text-left">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for item in cuentas_activas %}
+                <tr class="transition hover:bg-teal-50/50">
+                    <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ item.nombre }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.get_tipo_display }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.solo_recibe_traspasos|yesno:"Si,No" }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.saldo_inicial|miles }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">{{ item.saldo_actual_calculado|miles }}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-2">
+                            <a class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100" href="{% url 'cuentas:detalle' item.pk %}">Detalle</a>
+                            <a class="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100" href="{% url 'cuentas:editar' item.pk %}">Editar</a>
+                            <a class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100" href="{% url 'cuentas:eliminar' item.pk %}">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td class="px-4 py-8 text-center text-slate-500" colspan="6">No hay cuentas activas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-lg shadow-slate-200/60">
+    <header class="border-b border-slate-100 px-4 py-3">
+        <h3 class="font-display text-lg font-semibold text-slate-900">Cuentas inactivas</h3>
+    </header>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-slate-700">
+            <thead class="bg-slate-100/90 text-xs uppercase tracking-[0.08em] text-slate-600">
+                <tr>
+                    <th class="px-4 py-3 text-left">Nombre</th>
+                    <th class="px-4 py-3 text-left">Tipo</th>
+                    <th class="px-4 py-3 text-left">Solo traspasos</th>
+                    <th class="px-4 py-3 text-left">Saldo actual</th>
+                    <th class="px-4 py-3 text-left">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for item in cuentas_inactivas %}
+                <tr class="transition hover:bg-slate-50">
+                    <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ item.nombre }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.get_tipo_display }}</td>
+                    <td class="whitespace-nowrap px-4 py-3">{{ item.solo_recibe_traspasos|yesno:"Si,No" }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">{{ item.saldo_actual_calculado|miles }}</td>
+                    <td class="px-4 py-3">
+                        <a class="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100" href="{% url 'cuentas:editar' item.pk %}">Editar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td class="px-4 py-8 text-center text-slate-500" colspan="5">No hay cuentas inactivas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

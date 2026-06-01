@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas Hogar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .font-display {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .font-body {
+            font-family: "Manrope", "Segoe UI", sans-serif;
+        }
+
+        .form-shell p {
+            margin-bottom: 1rem;
+        }
+
+        .form-shell label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-shell input:not([type="checkbox"]):not([type="radio"]),
+        .form-shell select,
+        .form-shell textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.8rem;
+            background: #ffffff;
+            padding: 0.58rem 0.78rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-shell input:not([type="checkbox"]):not([type="radio"]):focus,
+        .form-shell select:focus,
+        .form-shell textarea:focus {
+            outline: none;
+            border-color: #0d9488;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+        }
+
+        .form-shell input[type="checkbox"],
+        .form-shell input[type="radio"] {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.45rem;
+            vertical-align: middle;
+            accent-color: #0d9488;
+        }
+
+        .form-shell .helptext {
+            display: block;
+            margin-top: 0.35rem;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        .form-shell ul.errorlist {
+            margin: 0 0 0.85rem;
+            padding: 0.65rem 0.85rem;
+            list-style: none;
+            border-radius: 0.8rem;
+            background-color: #fef2f2;
+            color: #b91c1c;
+            font-size: 0.85rem;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-full bg-[radial-gradient(circle_at_top,_#ccfbf1_0%,_#f0fdfa_30%,_#f8fafc_65%,_#e0f2fe_100%)] text-slate-800 antialiased font-body">
+    <header class="sticky top-0 z-30 border-b border-teal-100/80 bg-white/80 backdrop-blur-xl">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-4 py-4 md:flex-row md:items-end md:justify-between">
+                <div class="[animation:fadeSlide_.45s_ease-out_both]">
+                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Control financiero</p>
+                    <h1 class="font-display text-2xl font-semibold text-slate-900">Finanzas Hogar</h1>
+                </div>
+                <nav class="flex flex-wrap gap-2 text-sm font-semibold [animation:fadeSlide_.55s_ease-out_both]">
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'reportes:inicio' %}">Inicio</a>
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'cuentas:lista' %}">Cuentas</a>
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'categorias:lista' %}">Categorias</a>
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'movimientos:lista' %}">Movimientos</a>
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'creditos:lista' %}">Creditos</a>
+                    <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'reportes:indicadores' %}">Indicadores</a>
+                    <a class="rounded-full border border-amber-200/80 bg-amber-50 px-3 py-1.5 text-amber-700 transition hover:-translate-y-0.5 hover:border-amber-300 hover:text-amber-800" href="/admin/">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {% if messages %}
+        <section class="mb-6 space-y-2">
+            {% for message in messages %}
+            <article class="rounded-xl border px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800{% elif message.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800{% elif message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800{% else %}border-slate-200 bg-white text-slate-700{% endif %}">
+                {{ message }}
+            </article>
+            {% endfor %}
+        </section>
+        {% endif %}
+        <div class="space-y-6 [animation:fadeSlide_.6s_ease-out_both]">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</body>
+</html>
