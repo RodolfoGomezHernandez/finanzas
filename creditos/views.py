@@ -1,4 +1,5 @@
-﻿from django.contrib import messages
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -8,7 +9,7 @@ from .forms import CreditoForm, PagarCuotaForm, RevertirCuotaForm
 from .models import Credito, CuotaCredito
 
 
-class CreditoListView(ListView):
+class CreditoListView(LoginRequiredMixin, ListView):
     model = Credito
     template_name = "creditos/lista_creditos.html"
     context_object_name = "creditos"
@@ -17,7 +18,7 @@ class CreditoListView(ListView):
         return Credito.objects.prefetch_related("cuotas")
 
 
-class CreditoCreateView(CreateView):
+class CreditoCreateView(LoginRequiredMixin, CreateView):
     model = Credito
     form_class = CreditoForm
     template_name = "shared/form.html"
@@ -36,7 +37,7 @@ class CreditoCreateView(CreateView):
         return response
 
 
-class CreditoUpdateView(UpdateView):
+class CreditoUpdateView(LoginRequiredMixin, UpdateView):
     model = Credito
     form_class = CreditoForm
     template_name = "shared/form.html"
@@ -66,7 +67,7 @@ class CreditoUpdateView(UpdateView):
         return response
 
 
-class CreditoDeleteView(DeleteView):
+class CreditoDeleteView(LoginRequiredMixin, DeleteView):
     model = Credito
     template_name = "shared/confirm_delete.html"
     success_url = reverse_lazy("creditos:lista")
@@ -79,7 +80,7 @@ class CreditoDeleteView(DeleteView):
         return super().post(request, *args, **kwargs)
 
 
-class CreditoCuotasView(DetailView):
+class CreditoCuotasView(LoginRequiredMixin, DetailView):
     model = Credito
     template_name = "creditos/cuotas_credito.html"
     context_object_name = "credito"
@@ -93,7 +94,7 @@ class CreditoCuotasView(DetailView):
         return context
 
 
-class CuotaPagarView(FormView):
+class CuotaPagarView(LoginRequiredMixin, FormView):
     template_name = "shared/form.html"
     form_class = PagarCuotaForm
 
@@ -124,7 +125,7 @@ class CuotaPagarView(FormView):
         return super().form_valid(form)
 
 
-class CuotaRevertirView(FormView):
+class CuotaRevertirView(LoginRequiredMixin, FormView):
     template_name = "shared/form.html"
     form_class = RevertirCuotaForm
 

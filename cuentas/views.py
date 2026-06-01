@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.db.models import Sum
 
@@ -8,7 +9,7 @@ from .forms import CuentaForm
 from .models import Cuenta
 
 
-class CuentaListView(ListView):
+class CuentaListView(LoginRequiredMixin, ListView):
     model = Cuenta
     template_name = "cuentas/lista.html"
     context_object_name = "cuentas_activas"
@@ -27,7 +28,7 @@ class CuentaListView(ListView):
         return context
 
 
-class CuentaCreateView(CreateView):
+class CuentaCreateView(LoginRequiredMixin, CreateView):
     model = Cuenta
     form_class = CuentaForm
     template_name = "shared/form.html"
@@ -40,7 +41,7 @@ class CuentaCreateView(CreateView):
         return context
 
 
-class CuentaUpdateView(UpdateView):
+class CuentaUpdateView(LoginRequiredMixin, UpdateView):
     model = Cuenta
     form_class = CuentaForm
     template_name = "shared/form.html"
@@ -53,13 +54,13 @@ class CuentaUpdateView(UpdateView):
         return context
 
 
-class CuentaDeleteView(DeleteView):
+class CuentaDeleteView(LoginRequiredMixin, DeleteView):
     model = Cuenta
     template_name = "shared/confirm_delete.html"
     success_url = reverse_lazy("cuentas:lista")
 
 
-class CuentaDetailView(DetailView):
+class CuentaDetailView(LoginRequiredMixin, DetailView):
     model = Cuenta
     template_name = "cuentas/detalle.html"
     context_object_name = "cuenta"

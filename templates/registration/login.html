@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto w-full max-w-md rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
+    <div class="mb-6">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Acceso</p>
+        <h2 class="font-display text-2xl font-semibold text-slate-900">Iniciar sesion</h2>
+        <p class="mt-2 text-sm text-slate-600">Ingresa con tu usuario de Django para continuar.</p>
+    </div>
+
+    {% if form.errors %}
+    <article class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        Usuario o contrasena incorrectos.
+    </article>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+        <article class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Tu cuenta no tiene acceso a esta pagina.
+        </article>
+        {% else %}
+        <article class="mb-4 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-700">
+            Inicia sesion para ver esa pagina.
+        </article>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}" class="form-shell">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="mt-4 inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" type="submit">
+            Entrar
+        </button>
+    </form>
+</section>
+{% endblock %}

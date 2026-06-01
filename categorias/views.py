@@ -1,11 +1,12 @@
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .forms import CategoriaForm
 from .models import Categoria
 
 
-class CategoriaListView(ListView):
+class CategoriaListView(LoginRequiredMixin, ListView):
     model = Categoria
     template_name = "categorias/lista.html"
     context_object_name = "categorias"
@@ -14,7 +15,7 @@ class CategoriaListView(ListView):
         return Categoria.objects.select_related("cuenta_sugerida")
 
 
-class CategoriaCreateView(CreateView):
+class CategoriaCreateView(LoginRequiredMixin, CreateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = "shared/form.html"
@@ -27,7 +28,7 @@ class CategoriaCreateView(CreateView):
         return context
 
 
-class CategoriaUpdateView(UpdateView):
+class CategoriaUpdateView(LoginRequiredMixin, UpdateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = "shared/form.html"
@@ -40,7 +41,7 @@ class CategoriaUpdateView(UpdateView):
         return context
 
 
-class CategoriaDeleteView(DeleteView):
+class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
     model = Categoria
     template_name = "shared/confirm_delete.html"
     success_url = reverse_lazy("categorias:lista")

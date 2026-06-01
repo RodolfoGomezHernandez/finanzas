@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.shortcuts import redirect, render
@@ -107,7 +108,7 @@ def _kpi_context(fecha_desde=None, fecha_hasta=None):
     }
 
 
-class InicioView(TemplateView):
+class InicioView(LoginRequiredMixin, TemplateView):
     template_name = "reportes/inicio.html"
     filtro_sesion_key = "reportes_inicio_filtro_fechas"
 
@@ -191,7 +192,7 @@ class InicioView(TemplateView):
         return context
 
 
-class IndicadoresView(View):
+class IndicadoresView(LoginRequiredMixin, View):
     template_name = "reportes/indicadores.html"
 
     def get(self, request):

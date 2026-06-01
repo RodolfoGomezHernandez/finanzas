@@ -1,11 +1,12 @@
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .forms import MovimientoFiltroForm, MovimientoForm
 from .models import Movimiento
 
 
-class MovimientoListView(ListView):
+class MovimientoListView(LoginRequiredMixin, ListView):
     model = Movimiento
     template_name = "movimientos/lista.html"
     context_object_name = "movimientos"
@@ -39,7 +40,7 @@ class MovimientoListView(ListView):
         return context
 
 
-class MovimientoCreateView(CreateView):
+class MovimientoCreateView(LoginRequiredMixin, CreateView):
     model = Movimiento
     form_class = MovimientoForm
     template_name = "movimientos/form.html"
@@ -52,7 +53,7 @@ class MovimientoCreateView(CreateView):
         return context
 
 
-class MovimientoUpdateView(UpdateView):
+class MovimientoUpdateView(LoginRequiredMixin, UpdateView):
     model = Movimiento
     form_class = MovimientoForm
     template_name = "movimientos/form.html"
@@ -65,7 +66,7 @@ class MovimientoUpdateView(UpdateView):
         return context
 
 
-class MovimientoDeleteView(DeleteView):
+class MovimientoDeleteView(LoginRequiredMixin, DeleteView):
     model = Movimiento
     template_name = "shared/confirm_delete.html"
     success_url = reverse_lazy("movimientos:lista")

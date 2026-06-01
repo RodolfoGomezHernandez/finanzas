@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
@@ -9,7 +10,15 @@ from cuentas.models import Cuenta
 from movimientos.models import Movimiento
 
 
-class MovimientoValidacionTest(TestCase):
+class MovimientoAutenticadoTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        User = get_user_model()
+        self.user = User.objects.create_user(username="usuario_movimientos", password="clave12345")
+        self.client.force_login(self.user)
+
+
+class MovimientoValidacionTest(MovimientoAutenticadoTestCase):
     def setUp(self):
         self.cuenta_a = Cuenta.objects.create(nombre="Cuenta A", saldo_inicial=Decimal("0"))
         self.cuenta_b = Cuenta.objects.create(nombre="Cuenta B", saldo_inicial=Decimal("0"))
@@ -101,8 +110,16 @@ class MovimientoValidacionTest(TestCase):
         self.assertIsNotNone(movimiento.pk)
 
 
-class MovimientoListaFiltrosTest(TestCase):
+class MovimientoListaPublicaTest(TestCase):
+    def test_lista_requiere_login(self):
+        respuesta = self.client.get(reverse("movimientos:lista"))
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn("/accounts/login/", respuesta.url)
+
+
+class MovimientoListaFiltrosTest(MovimientoAutenticadoTestCase):
     def setUp(self):
+        super().setUp()
         self.cuenta_a = Cuenta.objects.create(nombre="Cuenta Filtro A", saldo_inicial=Decimal("0"))
         self.cuenta_b = Cuenta.objects.create(nombre="Cuenta Filtro B", saldo_inicial=Decimal("0"))
         self.cat_ingreso = Categoria.objects.create(nombre="Ingreso Filtro", tipo=Categoria.TipoCategoria.INGRESO)

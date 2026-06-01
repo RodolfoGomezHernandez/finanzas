@@ -94,6 +94,7 @@
                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Control financiero</p>
                     <h1 class="font-display text-2xl font-semibold text-slate-900">Finanzas Hogar</h1>
                 </div>
+                {% if user.is_authenticated %}
                 <nav class="flex flex-wrap gap-2 text-sm font-semibold [animation:fadeSlide_.55s_ease-out_both]">
                     <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'reportes:inicio' %}">Inicio</a>
                     <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'cuentas:lista' %}">Cuentas</a>
@@ -101,8 +102,14 @@
                     <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'movimientos:lista' %}">Movimientos</a>
                     <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'creditos:lista' %}">Creditos</a>
                     <a class="rounded-full border border-teal-200/70 bg-white/90 px-3 py-1.5 text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-400 hover:text-teal-700" href="{% url 'reportes:indicadores' %}">Indicadores</a>
-                    <a class="rounded-full border border-amber-200/80 bg-amber-50 px-3 py-1.5 text-amber-700 transition hover:-translate-y-0.5 hover:border-amber-300 hover:text-amber-800" href="/admin/">Admin</a>
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="rounded-full border border-rose-200/90 bg-rose-50 px-3 py-1.5 text-rose-700 transition hover:-translate-y-0.5 hover:border-rose-300 hover:text-rose-800">
+                            Cerrar sesion
+                        </button>
+                    </form>
                 </nav>
+                {% endif %}
             </div>
         </div>
     </header>

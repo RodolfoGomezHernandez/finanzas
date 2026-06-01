@@ -81,6 +81,9 @@ DATE_INPUT_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"]
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "reportes:inicio"
+LOGOUT_REDIRECT_URL = "login"
 
 # Seguridad para migracion de limpieza financiera local.
 # Debe activarse manualmente solo al ejecutar la limpieza y volver a False.

@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import NoReverseMatch, reverse
 
@@ -11,11 +12,26 @@ from movimientos.models import Movimiento
 from reportes.models import ConfiguracionKPI
 
 
-class ReportesRutasTest(TestCase):
+class ReportesRutasPublicasTest(TestCase):
+    def test_inicio_requiere_login(self):
+        respuesta = self.client.get(reverse("reportes:inicio"))
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn("/accounts/login/", respuesta.url)
+
+
+class ReportesAutenticadoTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        User = get_user_model()
+        self.user = User.objects.create_user(username="usuario_reportes", password="clave12345")
+        self.client.force_login(self.user)
+
+
+class ReportesRutasTest(ReportesAutenticadoTestCase):
     def test_inicio_y_indicadores(self):
         respuesta_inicio = self.client.get(reverse("reportes:inicio"))
         self.assertEqual(respuesta_inicio.status_code, 200)
-        self.assertContains(respuesta_inicio, "Registrador de Movimientos")
+        self.assertContains(respuesta_inicio, "Movimientos")
         self.assertContains(respuesta_inicio, "Gasto diario permitido")
 
         respuesta_indicadores = self.client.get(reverse("reportes:indicadores"))
@@ -27,7 +43,7 @@ class ReportesRutasTest(TestCase):
             reverse("presupuestos:lista")
 
 
-class ReportesInicioSaldoTotalTest(TestCase):
+class ReportesInicioSaldoTotalTest(ReportesAutenticadoTestCase):
     def test_saldo_total_no_descuenta_deuda_pendiente_de_credito(self):
         cuenta = Cuenta.objects.create(nombre="Cuenta Principal", saldo_inicial=Decimal("1000.00"))
         cat_ingreso = Categoria.objects.create(nombre="Sueldo Inicio Test", tipo=Categoria.TipoCategoria.INGRESO)
@@ -94,7 +110,7 @@ class ReportesInicioSaldoTotalTest(TestCase):
         self.assertEqual(respuesta.context["saldo_total"], Decimal("1400.00"))
 
 
-class ReportesKPIConfigTest(TestCase):
+class ReportesKPIConfigTest(ReportesAutenticadoTestCase):
     def test_guardar_configuracion_kpi(self):
         respuesta = self.client.post(
             reverse("reportes:indicadores"),
@@ -111,8 +127,9 @@ class ReportesKPIConfigTest(TestCase):
         self.assertEqual(cfg.severidad_descuento, Decimal("15"))
 
 
-class ReportesInicioFiltroFechasTest(TestCase):
+class ReportesInicioFiltroFechasTest(ReportesAutenticadoTestCase):
     def setUp(self):
+        super().setUp()
         self.cuenta = Cuenta.objects.create(nombre="Cuenta Filtro Inicio", saldo_inicial=Decimal("1000.00"))
         self.cat_ingreso = Categoria.objects.create(
             nombre="Ingreso Filtro Inicio",
@@ -164,8 +181,9 @@ class ReportesInicioFiltroFechasTest(TestCase):
         self.assertFalse(respuesta_limpia.context["filtro_fecha_activo"])
 
 
-class ReportesInicioPaginacionMovimientosTest(TestCase):
+class ReportesInicioPaginacionMovimientosTest(ReportesAutenticadoTestCase):
     def setUp(self):
+        super().setUp()
         self.cuenta = Cuenta.objects.create(nombre="Cuenta Paginacion Inicio", saldo_inicial=Decimal("1500.00"))
         self.cat_gasto = Categoria.objects.create(
             nombre="Gasto Paginacion Inicio",
