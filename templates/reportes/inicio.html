@@ -7,6 +7,41 @@
     <p class="mt-3 max-w-2xl text-sm text-slate-600">Tu centro diario para registrar y revisar por donde se mueve el dinero.</p>
 </section>
 
+<section class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/40">
+    <form method="get" class="grid gap-3 md:grid-cols-[1fr_1fr_auto_auto] md:items-end">
+        <div>
+            <label for="{{ filtro_fechas_form.desde.id_for_label }}" class="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">Desde</label>
+            {{ filtro_fechas_form.desde }}
+        </div>
+        <div>
+            <label for="{{ filtro_fechas_form.hasta.id_for_label }}" class="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">Hasta</label>
+            {{ filtro_fechas_form.hasta }}
+        </div>
+        <button type="submit" class="rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+            Filtrar
+        </button>
+        <a href="{% url 'reportes:inicio' %}?limpiar_fechas=1" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50">
+            Limpiar
+        </a>
+    </form>
+    {% if filtro_fechas_form.non_field_errors %}
+    <ul class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        {% for error in filtro_fechas_form.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if filtro_fecha_activo %}
+    <p class="mt-3 text-xs font-medium text-teal-700">
+        Filtro activo:
+        {% if filtro_fecha_desde %}{{ filtro_fecha_desde|date:"d/m/Y" }}{% else %}inicio{% endif %}
+        -
+        {% if filtro_fecha_hasta %}{{ filtro_fecha_hasta|date:"d/m/Y" }}{% else %}hoy{% endif %}
+        (se mantiene al recargar).
+    </p>
+    {% endif %}
+</section>
+
 <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
     <a href="{% url 'cuentas:lista' %}" class="rounded-2xl border border-cyan-100 bg-white/85 p-5 shadow-sm shadow-cyan-100/60 transition hover:-translate-y-0.5">
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Cuentas</p>
@@ -30,7 +65,13 @@
     <article class="rounded-2xl border border-emerald-100 bg-white/90 p-5 shadow-lg shadow-emerald-100/40">
         <p class="text-xs font-semibold uppercase tracking-[0.1em] text-emerald-700">Saldo total</p>
         <p class="mt-2 font-display text-3xl font-semibold text-slate-900">{{ saldo_total|miles }}</p>
-        <p class="mt-1 text-xs text-slate-500">Suma de saldos actuales de tus cuentas.</p>
+        <p class="mt-1 text-xs text-slate-500">
+            {% if filtro_fecha_hasta %}
+            Suma de saldos de tus cuentas al {{ filtro_fecha_hasta|date:"d/m/Y" }}.
+            {% else %}
+            Suma de saldos actuales de tus cuentas.
+            {% endif %}
+        </p>
     </article>
     <article class="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/50">
         <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Total movimientos</p>
@@ -71,11 +112,11 @@
 
 <section class="grid gap-4 xl:grid-cols-2">
     <article class="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60">
-        <h3 class="font-display text-lg font-semibold text-slate-900">Gastos por dia (30 dias)</h3>
+        <h3 class="font-display text-lg font-semibold text-slate-900">{{ titulo_gastos_dia }}</h3>
         <canvas id="chart-dia" class="mt-3"></canvas>
     </article>
     <article class="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60">
-        <h3 class="font-display text-lg font-semibold text-slate-900">Gastos por semana (12 semanas)</h3>
+        <h3 class="font-display text-lg font-semibold text-slate-900">{{ titulo_gastos_semana }}</h3>
         <canvas id="chart-semana" class="mt-3"></canvas>
     </article>
 </section>

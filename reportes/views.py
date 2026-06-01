@@ -13,16 +13,24 @@ from creditos.models import Credito
 from cuentas.models import Cuenta
 from movimientos.models import Movimiento
 
-from .forms import ConfiguracionKPIForm
+from .forms import ConfiguracionKPIForm, InicioFiltroFechasForm
 from .models import ConfiguracionKPI
 
 
-def _kpi_context():
+def _aplicar_filtro_fechas(queryset, fecha_desde=None, fecha_hasta=None):
+    if fecha_desde:
+        queryset = queryset.filter(fecha__gte=fecha_desde)
+    if fecha_hasta:
+        queryset = queryset.filter(fecha__lte=fecha_hasta)
+    return queryset
+
+
+def _kpi_context(fecha_desde=None, fecha_hasta=None):
     hoy = timezone.localdate()
     configuracion = ConfiguracionKPI.obtener()
 
     cuentas_activas = Cuenta.objects.filter(activa=True)
-    saldo_total = sum((cuenta.saldo_actual() for cuenta in cuentas_activas), Decimal("0"))
+    saldo_total = sum((cuenta.saldo_actual(hasta_fecha=fecha_hasta) for cuenta in cuentas_activas), Decimal("0"))
 
     fecha_corte = configuracion.fecha_proximo_corte
     if fecha_corte and fecha_corte > hoy:
@@ -35,10 +43,21 @@ def _kpi_context():
     factor_ahorro = Decimal("1") - (porcentaje_ahorro / Decimal("100"))
     gasto_diario_permitido = gasto_diario_base * factor_ahorro
 
-    gastos = Movimiento.objects.filter(tipo=Movimiento.TipoMovimiento.GASTO).select_related("categoria")
+    gastos = _aplicar_filtro_fechas(
+        Movimiento.objects.filter(tipo=Movimiento.TipoMovimiento.GASTO).select_related("categoria"),
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+    )
+
+    if fecha_desde or fecha_hasta:
+        gastos_rango_dia = gastos
+        gastos_rango_semana = gastos
+    else:
+        gastos_rango_dia = gastos.filter(fecha__gte=hoy - timedelta(days=29))
+        gastos_rango_semana = gastos.filter(fecha__gte=hoy - timedelta(weeks=11))
 
     gastos_dia = list(
-        gastos.filter(fecha__gte=hoy - timedelta(days=29))
+        gastos_rango_dia
         .values("fecha")
         .annotate(total=Sum("monto"))
         .order_by("fecha")
@@ -46,7 +65,7 @@ def _kpi_context():
 
     # Agrupacion semanal robusta en Python para evitar problemas de backend SQL.
     gastos_semana_map = {}
-    for item in gastos.filter(fecha__gte=hoy - timedelta(weeks=11)).values("fecha", "monto"):
+    for item in gastos_rango_semana.values("fecha", "monto"):
         semana_inicio = item["fecha"] - timedelta(days=item["fecha"].weekday())
         gastos_semana_map[semana_inicio] = gastos_semana_map.get(semana_inicio, Decimal("0")) + (
             item["monto"] or Decimal("0")
@@ -89,14 +108,70 @@ def _kpi_context():
 
 class InicioView(TemplateView):
     template_name = "reportes/inicio.html"
+    filtro_sesion_key = "reportes_inicio_filtro_fechas"
+
+    def _resolver_filtro_fechas(self):
+        if self.request.GET.get("limpiar_fechas") == "1":
+            self.request.session.pop(self.filtro_sesion_key, None)
+            return InicioFiltroFechasForm(), None, None
+
+        trae_filtro_en_query = ("desde" in self.request.GET) or ("hasta" in self.request.GET)
+        if trae_filtro_en_query:
+            filtro_form = InicioFiltroFechasForm(self.request.GET)
+            if filtro_form.is_valid():
+                fecha_desde = filtro_form.cleaned_data["desde"]
+                fecha_hasta = filtro_form.cleaned_data["hasta"]
+                self.request.session[self.filtro_sesion_key] = {
+                    "desde": fecha_desde.strftime("%d/%m/%Y") if fecha_desde else "",
+                    "hasta": fecha_hasta.strftime("%d/%m/%Y") if fecha_hasta else "",
+                }
+                return filtro_form, fecha_desde, fecha_hasta
+            return filtro_form, None, None
+
+        filtro_guardado = self.request.session.get(self.filtro_sesion_key, {})
+        if not isinstance(filtro_guardado, dict):
+            self.request.session.pop(self.filtro_sesion_key, None)
+            return InicioFiltroFechasForm(), None, None
+
+        filtro_form = InicioFiltroFechasForm(
+            {
+                "desde": filtro_guardado.get("desde", ""),
+                "hasta": filtro_guardado.get("hasta", ""),
+            }
+        )
+        if filtro_form.is_valid():
+            return filtro_form, filtro_form.cleaned_data["desde"], filtro_form.cleaned_data["hasta"]
+
+        self.request.session.pop(self.filtro_sesion_key, None)
+        return InicioFiltroFechasForm(), None, None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(_kpi_context())
-        context["total_movimientos"] = Movimiento.objects.count()
-        context["gastos_registrados"] = Movimiento.objects.filter(tipo=Movimiento.TipoMovimiento.GASTO).count()
-        context["ingresos_registrados"] = Movimiento.objects.filter(tipo=Movimiento.TipoMovimiento.INGRESO).count()
+        filtro_form, fecha_desde, fecha_hasta = self._resolver_filtro_fechas()
+
+        movimientos_filtrados = _aplicar_filtro_fechas(
+            Movimiento.objects.all(),
+            fecha_desde=fecha_desde,
+            fecha_hasta=fecha_hasta,
+        )
+
+        context.update(_kpi_context(fecha_desde=fecha_desde, fecha_hasta=fecha_hasta))
+        context["total_movimientos"] = movimientos_filtrados.count()
+        context["gastos_registrados"] = movimientos_filtrados.filter(tipo=Movimiento.TipoMovimiento.GASTO).count()
+        context["ingresos_registrados"] = movimientos_filtrados.filter(tipo=Movimiento.TipoMovimiento.INGRESO).count()
         context["creditos_activos"] = Credito.objects.filter(activa=True).count()
+        context["filtro_fechas_form"] = filtro_form
+        context["filtro_fecha_activo"] = bool(fecha_desde or fecha_hasta)
+        context["filtro_fecha_desde"] = fecha_desde
+        context["filtro_fecha_hasta"] = fecha_hasta
+        context["titulo_gastos_dia"] = (
+            "Gastos por dia (rango filtrado)" if context["filtro_fecha_activo"] else "Gastos por dia (30 dias)"
+        )
+        context["titulo_gastos_semana"] = (
+            "Gastos por semana (rango filtrado)"
+            if context["filtro_fecha_activo"]
+            else "Gastos por semana (12 semanas)"
+        )
         return context
 
 

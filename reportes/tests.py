@@ -109,3 +109,56 @@ class ReportesKPIConfigTest(TestCase):
         cfg = ConfiguracionKPI.obtener()
         self.assertEqual(str(cfg.fecha_proximo_corte), "2026-12-31")
         self.assertEqual(cfg.severidad_descuento, Decimal("15"))
+
+
+class ReportesInicioFiltroFechasTest(TestCase):
+    def setUp(self):
+        self.cuenta = Cuenta.objects.create(nombre="Cuenta Filtro Inicio", saldo_inicial=Decimal("1000.00"))
+        self.cat_ingreso = Categoria.objects.create(
+            nombre="Ingreso Filtro Inicio",
+            tipo=Categoria.TipoCategoria.INGRESO,
+        )
+        self.cat_gasto = Categoria.objects.create(
+            nombre="Gasto Filtro Inicio",
+            tipo=Categoria.TipoCategoria.GASTO,
+        )
+        self.url_inicio = reverse("reportes:inicio")
+
+        Movimiento.objects.create(
+            tipo=Movimiento.TipoMovimiento.INGRESO,
+            cuenta_origen=self.cuenta,
+            categoria=self.cat_ingreso,
+            monto=Decimal("120.00"),
+            fecha=date(2026, 1, 5),
+        )
+        Movimiento.objects.create(
+            tipo=Movimiento.TipoMovimiento.GASTO,
+            cuenta_origen=self.cuenta,
+            categoria=self.cat_gasto,
+            monto=Decimal("70.00"),
+            fecha=date(2026, 1, 20),
+        )
+
+    def test_filtro_fecha_se_persiste_en_recarga(self):
+        respuesta_filtrada = self.client.get(
+            self.url_inicio,
+            {"desde": "10/01/2026", "hasta": "31/01/2026"},
+        )
+        self.assertEqual(respuesta_filtrada.status_code, 200)
+        self.assertEqual(respuesta_filtrada.context["total_movimientos"], 1)
+
+        respuesta_recarga = self.client.get(self.url_inicio)
+        self.assertEqual(respuesta_recarga.status_code, 200)
+        self.assertEqual(respuesta_recarga.context["total_movimientos"], 1)
+        self.assertTrue(respuesta_recarga.context["filtro_fecha_activo"])
+
+    def test_limpiar_filtro_fecha_en_inicio(self):
+        self.client.get(
+            self.url_inicio,
+            {"desde": "10/01/2026", "hasta": "31/01/2026"},
+        )
+
+        respuesta_limpia = self.client.get(self.url_inicio, {"limpiar_fechas": "1"})
+        self.assertEqual(respuesta_limpia.status_code, 200)
+        self.assertEqual(respuesta_limpia.context["total_movimientos"], 2)
+        self.assertFalse(respuesta_limpia.context["filtro_fecha_activo"])
