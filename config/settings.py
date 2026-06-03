@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-jc2fc25ea+_z#u3d+$1=@6)%16n7*+fm7qs_4*nqk7b##t232$'
 DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "Rodolfo.pythonanywhere.com"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -80,6 +80,7 @@ DATE_INPUT_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"]
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "reportes:inicio"

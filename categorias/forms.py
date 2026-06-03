@@ -14,14 +14,8 @@ class CategoriaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["cuenta_sugerida"].queryset = Cuenta.objects.filter(activa=True)
         self.fields["cuenta_sugerida"].required = False
-        self.fields["cuenta_sugerida"].help_text = "Opcional. Recomendado para categorias de tipo Traspaso."
+        self.fields["cuenta_sugerida"].help_text = "Opcional. Cuenta sugerida para registrar movimientos."
 
     def clean(self):
-        cleaned_data = super().clean()
-        tipo = cleaned_data.get("tipo")
-        cuenta_sugerida = cleaned_data.get("cuenta_sugerida")
+        return super().clean()
 
-        if tipo != Categoria.TipoCategoria.TRASPASO and cuenta_sugerida is not None:
-            self.add_error("cuenta_sugerida", "Solo aplica para categorias de tipo Traspaso.")
-
-        return cleaned_data

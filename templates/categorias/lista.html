@@ -1,11 +1,11 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <section class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg shadow-slate-200/60 sm:p-8">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Gestion</p>
             <h2 class="font-display text-2xl font-semibold text-slate-900">Categorias</h2>
-            <p class="mt-2 text-sm text-slate-600">Las categorias de tipo Traspaso pueden sugerir una cuenta destino al registrar movimientos.</p>
+            <p class="mt-2 text-sm text-slate-600">Las categorias pueden sugerir una cuenta al registrar movimientos (cuenta de origen para ingresos/gastos, o cuenta de destino para traspasos).</p>
         </div>
         <a class="inline-flex items-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100" href="{% url 'categorias:crear' %}">
             Nueva categoria

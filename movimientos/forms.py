@@ -33,6 +33,7 @@ class MovimientoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["cuenta_destino"].required = False
+        self.fields["cuenta_origen"].required = False
         self.fields["categoria"].required = True
 
         tipo = self._resolver_tipo_actual()
@@ -46,6 +47,10 @@ class MovimientoForm(forms.ModelForm):
             categoria = self._resolver_categoria_actual()
             if categoria and categoria.cuenta_sugerida and not self.is_bound and not self.instance.pk:
                 self.initial.setdefault("cuenta_destino", categoria.cuenta_sugerida_id)
+        elif tipo in (Movimiento.TipoMovimiento.INGRESO, Movimiento.TipoMovimiento.GASTO):
+            categoria = self._resolver_categoria_actual()
+            if categoria and categoria.cuenta_sugerida and not self.is_bound and not self.instance.pk:
+                self.initial.setdefault("cuenta_origen", categoria.cuenta_sugerida_id)
 
     def _resolver_tipo_actual(self):
         if self.is_bound:
@@ -109,8 +114,16 @@ class MovimientoForm(forms.ModelForm):
                 self.add_error("cuenta_destino", "Debes seleccionar cuenta destino para un traspaso.")
             if cuenta_origen and cuenta_destino and cuenta_origen == cuenta_destino:
                 self.add_error("cuenta_destino", "Cuenta origen y destino deben ser distintas.")
-        elif cuenta_destino:
-            self.add_error("cuenta_destino", "Solo los traspasos usan cuenta destino.")
+        else:
+            if tipo in (Movimiento.TipoMovimiento.INGRESO, Movimiento.TipoMovimiento.GASTO):
+                if not cuenta_origen and categoria and categoria.cuenta_sugerida:
+                    cleaned_data["cuenta_origen"] = categoria.cuenta_sugerida
+                    cuenta_origen = categoria.cuenta_sugerida
+            if cuenta_destino:
+                self.add_error("cuenta_destino", "Solo los traspasos usan cuenta destino.")
+
+        if not cuenta_origen:
+            self.add_error("cuenta_origen", "Debes seleccionar una cuenta de origen.")
 
         return cleaned_data
 

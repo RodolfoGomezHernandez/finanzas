@@ -171,3 +171,36 @@ class MovimientoListaFiltrosTest(MovimientoAutenticadoTestCase):
         self.assertContains(respuesta, "bg-emerald-50")
         self.assertContains(respuesta, "bg-rose-50")
         self.assertContains(respuesta, "bg-sky-50")
+
+
+class MovimientoFormCuentaSugeridaTest(MovimientoAutenticadoTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cuenta_efectivo = Cuenta.objects.create(nombre="Efectivo", saldo_inicial=0)
+        self.cat_ingreso = Categoria.objects.create(
+            nombre="Trabajo en Efectivo",
+            tipo=Categoria.TipoCategoria.INGRESO,
+            cuenta_sugerida=self.cuenta_efectivo
+        )
+
+    def test_ingreso_populates_cuenta_origen_initially(self):
+        from movimientos.forms import MovimientoForm
+        form = MovimientoForm(initial={
+            "tipo": Movimiento.TipoMovimiento.INGRESO,
+            "categoria": self.cat_ingreso.id,
+        })
+        self.assertEqual(form.initial.get("cuenta_origen"), self.cuenta_efectivo.id)
+
+    def test_ingreso_falls_back_to_cuenta_sugerida_on_clean(self):
+        from movimientos.forms import MovimientoForm
+        form = MovimientoForm(data={
+            "tipo": Movimiento.TipoMovimiento.INGRESO,
+            "fecha": "2026-06-03",
+            "categoria": self.cat_ingreso.id,
+            "monto": "500.00",
+            "descripcion": "Ingreso extra",
+            # We omit cuenta_origen to test fallback
+        })
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data.get("cuenta_origen"), self.cuenta_efectivo)
+
